@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 use \App\Http\Controllers\AuthorController;
+use \App\Http\Controllers\BookController;
+use \App\Http\Controllers\AuthController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,16 +17,26 @@ use \App\Http\Controllers\AuthorController;
 |
 */
 
-Route::get('/', function () {
-    return view('index');
-});
-
-Route::redirect("/", "auth");
-
-Route::get('/auth', function () {
-    return view('auth');
-});
+// Route::get('/', function () {
+//     return view('index');
+// });
 
 
-Route::resource('authors', AuthorController::class );
+// Route::get('/auth', function () {
+//     return view('auth');
+// });
 
+
+Route::resource('authors', AuthorController::class)->middleware('auth');
+Route::resource('books', BookController::class)->middleware('auth');
+
+Route::get('login', function () {
+    if (Auth::check()) {
+        redirect(route('authors.index'));
+    }
+    return (view('login'));
+})->name('login_get');
+
+Route::post('login', [AuthController::class, 'login'])->name('login_post');
+
+Route::get('logout', [AuthController::class, 'logout'])->name('logout');

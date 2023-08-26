@@ -6,6 +6,10 @@ use App\Models\Author;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+
+use DB;
+
+
 class AuthorController extends Controller
 {
     /**
@@ -13,7 +17,8 @@ class AuthorController extends Controller
      */
     public function index()
     {
-        //
+        $authors = DB::table('authors')->orderBy('id', 'desc')->paginate(15);
+        return view("author.index", compact("authors"));
     }
 
     /**
@@ -21,7 +26,8 @@ class AuthorController extends Controller
      */
     public function create()
     {
-        //
+        return view('author.create');
+
     }
 
     /**
@@ -29,7 +35,31 @@ class AuthorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $new_author = $request->validate([
+            'name' => '',
+            'email' => '',
+            'phone' => '',
+            'avatar' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048|dimensions:min_width=300,min_height=300',
+        ]);
+
+
+
+        if ($request->file('avatar')) {
+            $path = $request->file('avatar')->store('authors', 'public');
+
+            $path = explode('/', $path);
+
+            DB::table('authors')->insert([
+                'name' => $new_author['name'],
+                'email' => $new_author['email'],
+                'phone' => $new_author['phone'],
+                'avatar' => $path[1],
+            ]);
+        }
+
+
+        return redirect('/authors');
+
     }
 
     /**
@@ -37,7 +67,9 @@ class AuthorController extends Controller
      */
     public function show(Author $author)
     {
-        //
+        $books = DB::table('books')->where('author_id', '=', $author->id)->get();
+
+        return view("author.show", compact("author", 'books'), );
     }
 
     /**
@@ -45,7 +77,7 @@ class AuthorController extends Controller
      */
     public function edit(Author $author)
     {
-        //
+        return view("author.edit", compact("author"));
     }
 
     /**
@@ -53,7 +85,26 @@ class AuthorController extends Controller
      */
     public function update(Request $request, Author $author)
     {
-        //
+        $FromDb = Author::find($author->id);
+
+        $FromDb->name = $request->input('name');
+        $FromDb->email = $request->input('email');
+        $FromDb->phone = $request->input('phone');
+
+        if ($request->file('avatar')) {
+            $path = $request->file('avatar')->store('authors', 'public');
+
+            $path = explode('/', $path);
+            $FromDb->avatar = $path[1];
+        }
+
+
+
+        $FromDb->save();
+
+
+
+        return redirect('/authors');
     }
 
     /**
@@ -61,6 +112,8 @@ class AuthorController extends Controller
      */
     public function destroy(Author $author)
     {
-        //
+        $author->delete();
+
+        return redirect('/authors');
     }
 }
