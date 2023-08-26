@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('container')
-
+<a  href={{route('books.create' )}} class="btn btn-primary mt-3">Create book</a>
 <table class="table">
   
   <thead>
@@ -24,7 +24,7 @@
    
   </tbody>
 </table>
-<a  href={{route('books.create' )}} class="btn btn-primary mb-3">Create book</a>
+
 
 {{ $books->links() }}
 @endsection
